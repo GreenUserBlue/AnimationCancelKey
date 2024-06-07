@@ -26,6 +26,8 @@ internal sealed class ModEntry : Mod
         if (configMenu is null)
             return;
 
+        config = Helper.ReadConfig<ModConfig>();
+        
         // register mod
         configMenu.Register(
             mod: this.ModManifest,
