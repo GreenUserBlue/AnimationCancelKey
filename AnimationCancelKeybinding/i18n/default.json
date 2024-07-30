@@ -1,0 +1,8 @@
+{
+  "Gmcm.Keybind.Name": "Animation-Cancel Key",
+  "Gmcm.Keybind.Tooltip": "Which key to press to cancel the current animation.",
+  "Gmcm.Suppression.Name": "Default Input Suppression",
+  "Gmcm.Suppression.Tooltip": "When to suppress the default behavior of the {{ keybindName }}, if it has any other in-game function.",
+  "Gmcm.Suppression.Option.OnCancel": "Only when cancelling",
+  "Gmcm.Suppression.Option.Always": "Always"
+}
