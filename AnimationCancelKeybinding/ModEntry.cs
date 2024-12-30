@@ -1,8 +1,10 @@
 ﻿using GenericModConfigMenu;
+using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Menus;
 
 namespace AnimationCancelKeybinding;
 
@@ -19,27 +21,31 @@ internal sealed class ModEntry : Mod
         config = helper.ReadConfig<ModConfig>();
         helper.Events.Input.ButtonsChanged += Input_ButtonsChanged;
         helper.Events.GameLoop.GameLaunched += GameLoop_GameLaunched;
+        helper.Events.Display.RenderedActiveMenu += CheckQoLForGreenUserBlue;
     }
 
     private void GameLoop_GameLaunched(object sender, GameLaunchedEventArgs e)
     {
-        var configMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+        var configMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>(
+            "spacechase0.GenericModConfigMenu"
+        );
         if (configMenu is null)
             return;
-        
+
         // register mod
         configMenu.Register(
             mod: ModManifest,
             reset: () => config = new ModConfig(),
             save: () => Helper.WriteConfig(config)
         );
-        
+
         configMenu.AddKeybindList(
             ModManifest,
             name: () => I18n.Gmcm_Keybind_Name(),
             tooltip: () => I18n.Gmcm_Keybind_Tooltip(),
             getValue: () => config.CancelKey,
-            setValue: value => config.CancelKey = value);
+            setValue: value => config.CancelKey = value
+        );
         configMenu.AddTextOption(
             ModManifest,
             name: () => I18n.Gmcm_Suppression_Name(),
@@ -47,7 +53,8 @@ internal sealed class ModEntry : Mod
             getValue: () => config.Suppression.ToString(),
             setValue: value => config.Suppression = Enum.Parse<KeySuppression>(value),
             allowedValues: Enum.GetValues<KeySuppression>().Select(v => v.ToString()).ToArray(),
-            formatAllowedValue: value => Helper.Translation.Get($"Gmcm.Suppression.Option.{value}"));
+            formatAllowedValue: value => Helper.Translation.Get($"Gmcm.Suppression.Option.{value}")
+        );
     }
 
     private void Input_ButtonsChanged(object sender, ButtonsChangedEventArgs e)
@@ -83,9 +90,35 @@ internal sealed class ModEntry : Mod
             Helper.Input.Suppress(button);
         }
     }
+
+    private void CheckQoLForGreenUserBlue(object sender, RenderedActiveMenuEventArgs e)
+    {
+        if (!Game1.dialogueUp)
+            return;
+        if (Game1.activeClickableMenu is not DialogueBox)
+            return;
+        var activeMenu = (DialogueBox)Game1.activeClickableMenu;
+        if (activeMenu.allClickableComponents == null)
+            return;
+        if (activeMenu.allClickableComponents.Count == 0)
+            return;
+
+        List<ClickableComponent> options = activeMenu.allClickableComponents;
+        for (int i = 0; i < options.Count; i++)
+        {
+            if (activeMenu.responses[i].hotkey is Keys.None)
+                activeMenu.responses[i].SetHotKey((Keys)(Keys.D1 + i));
+            // if (e.Pressed.Contains((SButton)(SButton.D1 + i)))
+            //     options[i].snapMouseCursorToCenter(); //this didn't work because layout is terrible apparently
+        }
+    }
 }
 
-enum KeySuppression { OnCancel, Always }
+enum KeySuppression
+{
+    OnCancel,
+    Always,
+}
 
 class ModConfig
 {
