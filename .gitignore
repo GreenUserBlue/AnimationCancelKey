@@ -18,3 +18,5 @@ riderModule.iml
 /dataSources/
 /dataSources.local.xml
 /.vs
+
+/*.user
